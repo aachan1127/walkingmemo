@@ -588,6 +588,7 @@
 				DEVELOPMENT_TEAM = RTD3A4NVTT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = memo/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "マイクを使用して、音声入力を行います";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "音声認識を使用して、音声でToDoを追加します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -619,6 +620,7 @@
 				DEVELOPMENT_TEAM = RTD3A4NVTT;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = memo/Info.plist;
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "マイクを使用して、音声入力を行います";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "音声認識を使用して、音声でToDoを追加します。";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

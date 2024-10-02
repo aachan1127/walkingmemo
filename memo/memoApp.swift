@@ -18,12 +18,17 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 }
 
 @main
-struct memoApp: App {
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    
+struct MyApp: App {
+    @StateObject var authViewModel = AuthViewModel()
+
+    init() {
+        FirebaseApp.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(authViewModel)
         }
     }
 }

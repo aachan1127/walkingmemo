@@ -22,7 +22,6 @@ class SpeechRecognizer: ObservableObject {
         requestSpeechAuthorization()
     }
 
-    // 権限をリクエスト（音声認識を使ってもいいかの許可をとる）
     func requestSpeechAuthorization() {
         SFSpeechRecognizer.requestAuthorization { status in
             switch status {
@@ -36,32 +35,26 @@ class SpeechRecognizer: ObservableObject {
         }
     }
 
-    // 録音を開始
     func startRecording() {
-        // 既存のタスクがある場合はキャンセル
         if recognitionTask != nil {
             recognitionTask?.cancel()
             recognitionTask = nil
         }
 
-        //マイクから音声を録音するためのリクエスト
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
 
         guard let recognitionRequest = recognitionRequest else {
             fatalError("音声認識リクエストの作成に失敗しました")
         }
 
-        //マイクから音声データを取得
         let inputNode = audioEngine.inputNode
 
-        // マイク入力が利用可能かどうかを確認
         guard inputNode.inputFormat(forBus: 0).channelCount > 0 else {
             fatalError("マイク入力が利用できません")
         }
 
         let recordingFormat = inputNode.outputFormat(forBus: 0)
-        
-        //installTap メソッドで、マイクの音声を「バッファー」という単位で処理し、それを音声認識に送信
+
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer, _) in
             recognitionRequest.append(buffer)
         }
@@ -74,10 +67,8 @@ class SpeechRecognizer: ObservableObject {
             fatalError("オーディオエンジンの開始に失敗しました: \(error.localizedDescription)")
         }
 
-        //speechRecognizer?.recognitionTask は、音声をリアルタイムで認識
         recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
             if let result = result {
-                //その結果（テキスト）を self.recognizedText に反映
                 self.recognizedText = result.bestTranscription.formattedString
             }
 
@@ -87,7 +78,6 @@ class SpeechRecognizer: ObservableObject {
         }
     }
 
-    // 録音を停止（録音を止めて、マイクのタップを解除）
     func stopRecording() {
         audioEngine.stop()
         audioEngine.inputNode.removeTap(onBus: 0)
@@ -97,42 +87,39 @@ class SpeechRecognizer: ObservableObject {
     }
 }
 
-
 struct WalkView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State var currentTodos: [Todo] = []
-    @AppStorage("todos") var todosData: Data = Data()
-    
+    @State private var todosData: Data = Data()
+
     @StateObject private var speechRecognizer = SpeechRecognizer()
     @State var input = ""
-    @State var isRecording = false // 録音中かどうかを管理する状態変数
+    @State var isRecording = false
 
     var body: some View {
         NavigationStack {
             VStack (spacing: 0) {
                 NavigationLink {
-                    SecondView(currentTodos: currentTodos) //画面の遷移先(リストデータを渡す）
+                    SecondView(currentTodos: currentTodos)
                 } label: {
-                    //ボタンの見た目👇ここの画面遷移の形ボタンにしたい
                     Text("終了")
                 }
 
-                
-                // リストの表示
                 List(currentTodos, id: \.id) { currentTodo in
                     Text(currentTodo.value)
                 }
-                
+
                 HStack {
                     TextField("memo", text: $input)
                         .padding()
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius:5))
-                    
+
                     Button("Enter") {
                         do {
                             try saveTodo(todo: input)
                             currentTodos = try getTodos()
-                            input = "" // 入力をクリア
+                            input = ""
                         } catch {
                             print(error.localizedDescription)
                         }
@@ -143,16 +130,15 @@ struct WalkView: View {
                     .clipShape(RoundedRectangle(cornerRadius:5))
                     .padding()
 
-                    // 録音状態に応じて、音声入力を開始/停止する
                     Button(action: {
                         if isRecording {
-                            speechRecognizer.stopRecording() // 録音を停止
+                            speechRecognizer.stopRecording()
                         } else {
-                            speechRecognizer.startRecording() // 録音を開始
+                            speechRecognizer.startRecording()
                         }
-                        isRecording.toggle() // 録音状態を反転
+                        isRecording.toggle()
                     }) {
-                        Text(isRecording ? "音声入力停止" : "音声入力開始") // ボタンのテキストを変更
+                        Text(isRecording ? "音声入力停止" : "音声入力開始")
                             .padding()
                             .background(isRecording ? Color.red : Color.green)
                             .foregroundColor(.white)
@@ -163,15 +149,11 @@ struct WalkView: View {
                 .padding(.horizontal)
                 .background(.yellow)
 
-                // 音声認識結果をリアルタイムで反映
                 Text(speechRecognizer.recognizedText)
                     .padding()
                     .background(.gray)
             }
-            //ナビゲーションができてるかの確認（画面のタイトル）
             .navigationTitle("画面１")
-            
-            
         }
         .onAppear {
             do {
@@ -180,9 +162,15 @@ struct WalkView: View {
                 print(error.localizedDescription)
             }
         }
-        // 音声認識結果を`input`に反映させる（iOS 17対応）
-        .onChange(of: speechRecognizer.recognizedText) {
-            input = speechRecognizer.recognizedText
+        .onChange(of: speechRecognizer.recognizedText) { newValue in
+            input = newValue
+        }
+        .onChange(of: authViewModel.currentUser) { _ in
+            do {
+                currentTodos = try getTodos()
+            } catch {
+                print(error.localizedDescription)
+            }
         }
     }
 
@@ -190,11 +178,26 @@ struct WalkView: View {
         let todo = Todo(id: UUID(), value: todo)
         currentTodos.append(todo)
         let encodedTodos = try JSONEncoder().encode(currentTodos)
-        todosData = encodedTodos
+        if let userID = authViewModel.currentUser?.id {
+            let key = "todos_\(userID)"
+            UserDefaults.standard.set(encodedTodos, forKey: key)
+        } else {
+            print("ユーザーがログインしていません")
+        }
     }
 
     func getTodos() throws -> [Todo] {
-        try JSONDecoder().decode([Todo].self, from: todosData)
+        if let userID = authViewModel.currentUser?.id {
+            let key = "todos_\(userID)" // ユーザーIDをキーに含める
+            if let data = UserDefaults.standard.data(forKey: key) {
+                return try JSONDecoder().decode([Todo].self, from: data)
+            } else {
+                return []
+            }
+        } else {
+            print("ユーザーがログインしていません")
+            return []
+        }
     }
 }
 

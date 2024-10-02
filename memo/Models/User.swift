@@ -7,9 +7,8 @@
 
 import Foundation
 
-struct User: Identifiable, Codable {
-    let id: String
-    let name: String
-    let email: String
-//    var photoUrl: String?　 画像登録させる？
+struct User: Identifiable, Codable, Equatable {
+    var id: String // 必須のString型に変更
+    var name: String
+    var email: String
 }

@@ -18,21 +18,24 @@ class HomeViewModel: ObservableObject {
             self.users = await fetchUsers() // fetchUsersの結果をusersに代入
         }
     }
-}
-
-// Download Users Data
-private func fetchUsers() async -> [User] { // 非同期でユーザーデータを取得し、[User]を返す
-    var users: [User] = []
-    do {
-        let snapshot = try await Firestore.firestore().collection("users").getDocuments()
-        
-        for document in snapshot.documents {
-            if let user = try? document.data(as: User.self) {
-                users.append(user) // データを配列に追加
+    
+    // Download Users Data
+    private func fetchUsers() async -> [User] {
+        var users: [User] = []
+        do {
+            let snapshot = try await Firestore.firestore().collection("users").getDocuments()
+            
+            for document in snapshot.documents {
+                let data = document.data()
+                let id = document.documentID
+                let name = data["name"] as? String ?? ""
+                let email = data["email"] as? String ?? ""
+                let user = User(id: id, name: name, email: email)
+                users.append(user)
             }
+        } catch {
+            print("ユーザーデータ取得失敗: \(error.localizedDescription)")
         }
-    } catch {
-        print("ユーザーデータ取得失敗: \(error.localizedDescription)")
+        return users
     }
-    return users // 取得したユーザーデータを返す
 }

@@ -16,7 +16,7 @@ class AuthViewModel: ObservableObject {
     
     init() {
         self.userSession = Auth.auth().currentUser
-        print("ログインユーザー:\(self.userSession?.email)")
+        print("ログインユーザー: \(self.userSession?.email ?? "")")
         
         Task {
             await self.fetchCurrentUser()
@@ -28,9 +28,8 @@ class AuthViewModel: ObservableObject {
     func login(email: String, password: String) async {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
-            print("ログイン成功: \(result.user.email)")
+            print("ログイン成功: \(result.user.email ?? "")")
             self.userSession = result.user
-            print("self.userSeesion: \(self.userSession?.email)")
             
             await self.fetchCurrentUser()
         } catch {
@@ -54,12 +53,12 @@ class AuthViewModel: ObservableObject {
     func createAccount(email: String, password: String, name: String) async {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
-            print("ユーザー登録成功: \(result.user.email)")
+            print("ユーザー登録成功: \(result.user.email ?? "")")
             self.userSession = result.user
-            
+
             let newUser = User(id: result.user.uid, name: name, email: email)
-            await uploadUserData(withUser: newUser)
-            
+            try await uploadUserData(withUser: newUser)
+
             await self.fetchCurrentUser()
         } catch {
             print("ユーザー登録失敗: \(error.localizedDescription)")
@@ -75,7 +74,7 @@ class AuthViewModel: ObservableObject {
         
         do {
             try await Auth.auth().currentUser?.delete()
-            //Firestoreのユーザーコレクションに存在するドキュメントを特定して削除
+            // Firestoreのユーザーコレクションに存在するドキュメントを特定して削除
             try await Firestore.firestore().collection("users").document(id).delete()
             print("アカウント削除成功")
             self.resetAccount()
@@ -86,32 +85,35 @@ class AuthViewModel: ObservableObject {
     
     // Reset Account
     private func resetAccount() {
-        
         self.userSession = nil
         self.currentUser = nil
     }
     
     // Upload User Data
-    private func uploadUserData(withUser user: User) async {
-        do {
-            let userData = try Firestore.Encoder().encode(user)
-            try await Firestore.firestore().collection("users").document(user.id).setData(userData)
-            print("データ保存成功")
-        } catch {
-            print("データ保存失敗: \(error.localizedDescription)")
-        }
+    private func uploadUserData(withUser user: User) async throws {
+        let data: [String: Any] = [
+            "name": user.name,
+            "email": user.email
+        ]
+        try await Firestore.firestore().collection("users").document(user.id).setData(data)
+        print("データ保存成功")
     }
     
     // Fetch current user
     @MainActor
     private func fetchCurrentUser() async {
-        
         guard let uid = self.userSession?.uid else { return }
-        
+
         do {
-            let snapshot = try await Firestore.firestore().collection("users").document(uid).getDocument()
-            self.currentUser = try snapshot.data(as: User.self)
-            print("カレントユーザー所得成功: \(self.currentUser)")
+            let document = try await Firestore.firestore().collection("users").document(uid).getDocument()
+            if let data = document.data() {
+                let name = data["name"] as? String ?? ""
+                let email = data["email"] as? String ?? ""
+                self.currentUser = User(id: uid, name: name, email: email)
+                print("カレントユーザー取得成功: \(self.currentUser)")
+            } else {
+                print("ユーザーデータが存在しません")
+            }
         } catch {
             print("カレントユーザー取得失敗: \(error.localizedDescription)")
         }
@@ -119,7 +121,7 @@ class AuthViewModel: ObservableObject {
     
     // Update user profile
     func updateUserProfile(withId id: String, name: String) async {
-        let data: [AnyHashable: Any] = [
+        let data: [String: Any] = [
             "name": name
         ]
         
@@ -129,8 +131,8 @@ class AuthViewModel: ObservableObject {
             
             // プロフィール更新後、最新のユーザー情報を取得
             await self.fetchCurrentUser()
-       } catch {
-           print("プロフィール更新失敗: \(error.localizedDescription)")
+        } catch {
+            print("プロフィール更新失敗: \(error.localizedDescription)")
         }
     }
 }

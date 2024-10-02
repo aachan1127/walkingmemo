@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct HomeView: View {
-    
-    @StateObject private var viewModel = HomeViewModel() // StateObjectでViewModelを管理
-    
+    @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject var authViewModel: AuthViewModel
+
     var body: some View {
         NavigationStack {
             VStack {
@@ -21,7 +21,7 @@ struct HomeView: View {
                 }
             }
             .padding()
-            .navigationTitle("このアプリのタイトル？") // アプリのタイトル決まったらここ変える？
+            .navigationTitle("このアプリのタイトル？")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
