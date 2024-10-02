@@ -17,7 +17,7 @@ struct HomeView: View {
                 NavigationLink {
                     WalkView()
                 } label: {
-                    Text("WalkViewへナビ遷移")
+                    Text("お散歩モードスタート")
                 }
             }
             .padding()

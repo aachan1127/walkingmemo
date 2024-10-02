@@ -12,7 +12,7 @@ struct FifthView: View {
         NavigationStack {
             VStack {
                 NavigationLink {
-                    WalkView()
+                    HomeView()
                 } label: {
                     Text("最初の画面に戻る")
                 }
