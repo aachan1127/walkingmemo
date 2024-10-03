@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ThirdView: View {
     var currentTodos: [Todo] // SecondViewから渡されるリスト
-
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -10,11 +10,13 @@ struct ThirdView: View {
                 ZStack {
                     Color.yellow
                         .ignoresSafeArea()
-
+                    
                     // currentTodos を表示し、タップしたら FourthView に渡す
-                    List(currentTodos, id: \.id) { todo in
-                        NavigationLink(destination: FourthView(selectedTodo: todo)) {
-                            Text(todo.value)
+                    List {
+                        ForEach(currentTodos.filter { !$0.isDeleted }, id: \.id) { todo in
+                            NavigationLink(destination: FourthView(selectedTodo: todo)) {
+                                Text(todo.value)
+                            }
                         }
                     }
                 }

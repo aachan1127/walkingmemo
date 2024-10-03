@@ -104,6 +104,9 @@ struct SecondView: View {
                 
                 // currentTodos をループして、各カテゴリに分類
                 for todo in currentTodos {
+                    if todo.isDeleted {
+                        continue // 削除済みの項目をスキップ
+                    }
                     if todo.value.hasPrefix(taskCategory) {
                         taskTodos.append(todo)
                     } else if todo.value.hasPrefix(positiveCategory) {

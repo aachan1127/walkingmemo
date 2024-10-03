@@ -88,19 +88,6 @@ class SpeechRecognizer: ObservableObject {
 }
 
 
-//
-//  WalkView.swift
-//  memo
-//
-//  Created by 山本明音 on 2024/09/02.
-//
-
-import SwiftUI
-import Speech
-import AVFoundation
-
-// SpeechRecognizerクラスは省略
-
 struct WalkView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State var currentTodos: [Todo] = []
@@ -132,8 +119,11 @@ struct WalkView: View {
                         Text("終了")
                     }
                     
-                    List(currentTodos, id: \.id) { currentTodo in
-                        Text(currentTodo.value)
+                    List {
+                        ForEach(currentTodos, id: \.id) { currentTodo in
+                            Text(currentTodo.value)
+                        }
+                        .onDelete(perform: deleteTodo) // スワイプ削除を追加
                     }
                     
                     HStack {
@@ -155,7 +145,7 @@ struct WalkView: View {
                                 print(error.localizedDescription)
                             }
                         }
-                        .disabled(!isUserLoaded) // currentUserが取得されるまでボタンを無効化
+                        .disabled(!isUserLoaded)
                         .padding()
                         .foregroundStyle(.white)
                         .background(.blue)
@@ -205,7 +195,6 @@ struct WalkView: View {
                 isUserLoaded = true
                 loadTodos()
             } else {
-                // currentUserがまだnilの場合、再度チェック
                 waitForCurrentUser()
             }
         }
@@ -221,8 +210,8 @@ struct WalkView: View {
     
     func saveTodo(todo: String) throws {
         let calendar = Calendar.current
-        let date = calendar.startOfDay(for: Date()) // 時間を切り捨てた日付
-        let todo = Todo(id: UUID(), value: todo, date: date)
+        let date = calendar.startOfDay(for: Date())
+        let todo = Todo(id: UUID(), value: todo, date: date, isDeleted: false)
         var allTodos = try getAllTodos()
         allTodos.append(todo)
         let encodedTodos = try JSONEncoder().encode(allTodos)
@@ -235,6 +224,39 @@ struct WalkView: View {
         }
     }
     
+    // スワイプ削除の処理
+    func deleteTodo(at offsets: IndexSet) {
+        for index in offsets {
+            var todo = currentTodos[index]
+            todo.isDeleted = true
+            updateTodoInStorage(todo)
+        }
+        loadTodos()
+    }
+    
+    // Todoを更新する関数
+    func updateTodoInStorage(_ todo: Todo) {
+        if var allTodos = try? getAllTodos() {
+            if let idx = allTodos.firstIndex(where: { $0.id == todo.id }) {
+                allTodos[idx] = todo
+                saveAllTodos(allTodos)
+            }
+        }
+    }
+    
+    // 全てのTodoを保存する関数
+    func saveAllTodos(_ todosToSave: [Todo]) {
+        if let userID = authViewModel.currentUser?.id {
+            let key = "todos_\(userID)"
+            do {
+                let encodedTodos = try JSONEncoder().encode(todosToSave)
+                UserDefaults.standard.set(encodedTodos, forKey: key)
+            } catch {
+                print("データのエンコードに失敗しました: \(error.localizedDescription)")
+            }
+        }
+    }
+    
     func getAllTodos() throws -> [Todo] {
         if let userID = authViewModel.currentUser?.id {
             let key = "todos_\(userID)"
@@ -243,7 +265,6 @@ struct WalkView: View {
                     return try JSONDecoder().decode([Todo].self, from: data)
                 } catch {
                     print("データのデコードに失敗しました: \(error.localizedDescription)")
-                    // データをクリア
                     UserDefaults.standard.removeObject(forKey: key)
                     return []
                 }
@@ -264,8 +285,8 @@ struct WalkView: View {
         let targetDateComponents = calendar.dateComponents([.year, .month, .day], from: date)
 
         return allTodos.filter { todo in
-            // dateがnilの場合は除外
-            guard let todoDate = todo.date else {
+            // 削除されていないTodoのみ
+            guard let todoDate = todo.date, !todo.isDeleted else {
                 return false
             }
             let todoDateComponents = calendar.dateComponents([.year, .month, .day], from: todoDate)

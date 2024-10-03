@@ -41,6 +41,12 @@ struct HomeView: View {
                     TodosByDateView(selectedDate: selectedDate)
                         .environmentObject(authViewModel)
                 }
+                
+                // 「削除済みのメモを見る」ボタンを追加
+                NavigationLink(destination: DeleteView().environmentObject(authViewModel)) {
+                    Text("削除済みのメモを見る")
+                }
+                .padding()
             }
             .navigationTitle("Home画面")
             .navigationBarTitleDisplayMode(.inline)
