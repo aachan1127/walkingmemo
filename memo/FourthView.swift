@@ -12,7 +12,7 @@ struct FourthView: View {
         ScrollView { // ScrollViewで全体をラップする
             VStack {
                 // FifthViewへのナビゲーションリンクを追加
-                NavigationLink(destination: FifthView()) {
+                NavigationLink(destination: FifthView(inputDetail: inputDetail, inputEmotion: inputEmotion, inputPositiveThought: inputPositiveThought)) {
                     Text("FifthViewへ進む")
                         .padding()
                         .background(Color.green)
