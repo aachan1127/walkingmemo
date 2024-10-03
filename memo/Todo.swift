@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Todo: Identifiable, Codable, Equatable {
+struct Todo: Identifiable, Codable, Equatable, Hashable {
     var id: UUID
     var value: String
     var date: Date? // 日付をオプショナルに変更

@@ -16,9 +16,12 @@ struct FifthView: View {
                 } label: {
                     Text("最初の画面に戻る")
                 }
+                .onAppear {
+                    // FifthViewに遷移する際にローカルデータを削除
+                    UserDefaults.standard.removeObject(forKey: "aiResponse")
+                }
 
                 ZStack {
-                    
                     Color.blue
                         .ignoresSafeArea() //上下の余白をなくす
                     Text("FifthView")
