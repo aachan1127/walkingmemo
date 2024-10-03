@@ -2,12 +2,13 @@
 //  Todo.swift
 //  memo
 //
-//  Created by 山本明音 on 2024/09/05.
+//  Created by 山本明音 on 2024/09/27.
 //
 
 import Foundation
 
-struct Todo: Codable {
-    let id: UUID
-    let value: String
+struct Todo: Identifiable, Codable, Equatable {
+    var id: UUID
+    var value: String
+    var date: Date? // 日付をオプショナルに変更
 }

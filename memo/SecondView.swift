@@ -124,10 +124,10 @@ struct SecondView_Previews: PreviewProvider {
     static var previews: some View {
         // テスト用のデータを渡してプレビュー
         SecondView(currentTodos: [
-            Todo(id: UUID(), value: "タスク1: 今日は買い物に行く"),
-            Todo(id: UUID(), value: "ポジティブ: 今日は天気がいい"),
-            Todo(id: UUID(), value: "ネガティブ: 天気が悪い"),
-            Todo(id: UUID(), value: "未分類のタスク")
+            Todo(id: UUID(), value: "タスク1: 今日は買い物に行く", date: Date()),
+            Todo(id: UUID(), value: "ポジティブ: 今日は天気がいい", date: Date()),
+            Todo(id: UUID(), value: "ネガティブ: 天気が悪い", date: Date()),
+            Todo(id: UUID(), value: "未分類のタスク", date: Date())
         ])
     }
 }

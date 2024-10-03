@@ -26,6 +26,9 @@ struct ThirdView: View {
 
 struct ThirdView_Previews: PreviewProvider {
     static var previews: some View {
-        ThirdView(currentTodos: [Todo(id: UUID(), value: "サンプルデータ1"), Todo(id: UUID(), value: "サンプルデータ2")])
+        ThirdView(currentTodos: [
+            Todo(id: UUID(), value: "サンプルデータ1", date: Date()),
+            Todo(id: UUID(), value: "サンプルデータ2", date: Date())
+        ])
     }
 }

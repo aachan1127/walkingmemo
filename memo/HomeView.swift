@@ -10,7 +10,10 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @EnvironmentObject var authViewModel: AuthViewModel
-
+    
+    @State private var selectedDate: Date = Date()
+    @State private var isShowingTodos = false
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -19,9 +22,27 @@ struct HomeView: View {
                 } label: {
                     Text("お散歩モードスタート")
                 }
+                .padding()
+                
+                // カレンダーを表示
+                DatePicker(
+                    "Select Date",
+                    selection: $selectedDate,
+                    displayedComponents: [.date]
+                )
+                .datePickerStyle(GraphicalDatePickerStyle())
+                .padding()
+                
+                Button("選択した日のメモを見る") {
+                    isShowingTodos = true
+                }
+                .padding()
+                .sheet(isPresented: $isShowingTodos) {
+                    TodosByDateView(selectedDate: selectedDate)
+                        .environmentObject(authViewModel)
+                }
             }
-            .padding()
-            .navigationTitle("このアプリのタイトル？")
+            .navigationTitle("Home画面")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -39,7 +60,6 @@ struct HomeView: View {
                     }
                 }
             }
-            .navigationTitle("Home画面")
         }
         .tint(.primary)
     }
