@@ -16,6 +16,8 @@ struct TodosByDateView: View {
     @State private var selectedTodos = Set<UUID>()
     @State private var showAilogView = false
     @State private var aiFeedback: String = "フィードバックを取得中..."
+    @State private var inputDetail: String = "詳細情報を取得中..."
+    @State private var inputPositiveThought: String = "前向きな考えを取得中..."
 
     var body: some View {
         NavigationStack {
@@ -58,8 +60,9 @@ struct TodosByDateView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
             .sheet(isPresented: $showAilogView) {
-                AilogView(aiFeedback: aiFeedback)
-                    .presentationDetents([.medium, .large]) // ハーフモーダル
+                // selectedDateを追加
+                AilogView(aiFeedback: aiFeedback, inputDetail: inputDetail, inputPositiveThought: inputPositiveThought, selectedDate: selectedDate)
+                    .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
         }
@@ -186,6 +189,8 @@ struct TodosByDateView: View {
                 }
                 if let document = snapshot?.documents.first {
                     self.aiFeedback = document.data()["aiResponse"] as? String ?? "フィードバックが見つかりませんでした。"
+                    self.inputDetail = document.data()["inputDetail"] as? String ?? "詳細情報が見つかりませんでした。"
+                    self.inputPositiveThought = document.data()["inputPositiveThought"] as? String ?? "前向きな考えが見つかりませんでした。"
                 } else {
                     self.aiFeedback = "フィードバックが見つかりませんでした。"
                 }
