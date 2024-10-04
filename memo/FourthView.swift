@@ -11,14 +11,6 @@ struct FourthView: View {
     var body: some View {
         ScrollView { // ScrollViewで全体をラップする
             VStack {
-                // FifthViewへのナビゲーションリンクを追加
-                NavigationLink(destination: FifthView(inputDetail: inputDetail, inputEmotion: inputEmotion, inputPositiveThought: inputPositiveThought)) {
-                    Text("FifthViewへ進む")
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                }
                 
                 Text("選択された項目: \(selectedTodo.value)")
                     .font(.title)
@@ -71,6 +63,16 @@ struct FourthView: View {
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                 }
+                
+                // FifthViewへのナビゲーションリンクを追加
+                NavigationLink(destination: FifthView(inputDetail: inputDetail, inputEmotion: inputEmotion, inputPositiveThought: inputPositiveThought)) {
+                    Text("次のページへ進む")
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                
             }
             .padding()
             .background(Color.white.ignoresSafeArea())

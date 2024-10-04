@@ -65,6 +65,7 @@
 		C7252DA12C9C29E000D18951 /* FifthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FifthView.swift; sourceTree = "<group>"; };
 		C7252DA32C9D4B7100D18951 /* SixthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixthView.swift; sourceTree = "<group>"; };
 		C777A6642CAFDD9E00C46214 /* AilogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AilogView.swift; sourceTree = "<group>"; };
+		C777A6682CB0343900C46214 /* NaturalLanguage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NaturalLanguage.framework; path = System/Library/Frameworks/NaturalLanguage.framework; sourceTree = SDKROOT; };
 		C793A35F2CA2A0F300E4ACC5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C7E014852CA67C8A000D2975 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		C7E014872CA6851F000D2975 /* WalkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkView.swift; sourceTree = "<group>"; };
@@ -130,6 +131,7 @@
 		C793A3902CA2A40B00E4ACC5 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C777A6682CB0343900C46214 /* NaturalLanguage.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

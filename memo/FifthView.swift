@@ -17,9 +17,9 @@ struct FifthView: View {
 
     @State private var aiResponse: String = "ここにフィードバックが表示されます"
     @State private var isRequesting: Bool = false
-    @State private var navigateToHome = false
+    @State private var navigateToHome = false // 新しい遷移フラグ
     let openAI: OpenAI
-
+    
     init(inputDetail: String, inputEmotion: String, inputPositiveThought: String) {
         self.inputDetail = inputDetail
         self.inputEmotion = inputEmotion
@@ -31,13 +31,6 @@ struct FifthView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Button("Home画面に戻る") {
-                    navigateToHome = true
-                }
-                .padding()
-                .background(Color.green)
-                .foregroundColor(.white)
-                .cornerRadius(8)
                 
                 ScrollView {
                     Text(aiResponse)
@@ -57,14 +50,28 @@ struct FifthView: View {
                 .foregroundColor(.white)
                 .cornerRadius(8)
                 .disabled(isRequesting)
+                
+                
+                    // Home画面に戻るボタン
+                    Button("Home画面に戻る") {
+                        saveFeedbackToFirebase() // Firebaseにフィードバックを保存
+                        // 他の処理（必要に応じて）
+                        navigateToHome = true  // HomeViewへ遷移するトリガー
+                    }
+                    .padding()
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                
             }
             .navigationTitle("フィードバック画面")
             .navigationDestination(isPresented: $navigateToHome) {
-                HomeView()
+                HomeView() // navigateToHomeがtrueになった時に遷移
             }
         }
     }
 
+    // AIからのフィードバックを取得する関数
     @MainActor
     func fetchAIResponse() async {
         isRequesting = true
@@ -89,7 +96,7 @@ struct FifthView: View {
                 switch firstChoice.message {
                 case .assistant(let assistantMessage):
                     aiResponse = assistantMessage.content ?? "No response"
-                    saveFeedbackToFirebase()
+                    UserDefaults.standard.set(aiResponse, forKey: "aiResponse")
                 default:
                     break
                 }
@@ -102,6 +109,7 @@ struct FifthView: View {
         isRequesting = false
     }
     
+    // Firebaseにデータを保存する関数
     private func saveFeedbackToFirebase() {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("ユーザーがログインしていません")
@@ -109,19 +117,16 @@ struct FifthView: View {
         }
         
         let db = Firestore.firestore()
-        let documentID = UUID().uuidString
+        let documentID = UUID().uuidString // 一意のドキュメントID
         
-        // 日付のみ（時刻を00:00:00）に設定
-        let date = Calendar.current.startOfDay(for: Date())
-        let timestamp = Timestamp(date: date)
-        
+        // 保存するデータ
         let feedbackData: [String: Any] = [
             "userID": userID,
             "inputDetail": inputDetail,
             "inputEmotion": inputEmotion,
             "inputPositiveThought": inputPositiveThought,
             "aiResponse": aiResponse,
-            "timestamp": timestamp
+            "timestamp": Timestamp(date: Date())
         ]
         
         db.collection("feedbacks").document(documentID).setData(feedbackData) { error in
@@ -132,4 +137,8 @@ struct FifthView: View {
             }
         }
     }
+}
+
+#Preview {
+    FifthView(inputDetail: "サンプル詳細", inputEmotion: "サンプル感情", inputPositiveThought: "サンプル前向きな考え")
 }
