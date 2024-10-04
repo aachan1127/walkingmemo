@@ -13,10 +13,10 @@ struct SixthView: View {
     var inputDetail: String
     var inputEmotion: String
     
-    @State private var aiResponse: String = UserDefaults.standard.string(forKey: "aiResponse") ?? "ボタンを押すとここに返答が表示されます"
-    @State private var isRequesting: Bool = false // リクエスト中かどうかを示すフラグ
-    @State private var buttonText: String = "AIに相談" // ボタンの表示テキスト
-    @State private var buttonColor: Color = .blue // ボタンの色
+    @State private var aiResponse: String = "ボタンを押すとここに返答が表示されます"
+    @State private var isRequesting: Bool = false
+    @State private var buttonText: String = "AIに相談"
+    @State private var buttonColor: Color = .blue
     
     let openAI: OpenAI
     
@@ -44,22 +44,20 @@ struct SixthView: View {
             
             Button(buttonText) {
                 Task {
-                    await fetchAIResponse() // プロンプトの内容を送信
+                    await fetchAIResponse()
                 }
             }
             .padding()
             .background(buttonColor)
             .foregroundColor(.white)
             .cornerRadius(8)
-            .disabled(isRequesting) // リクエスト中はボタンを無効化
+            .disabled(isRequesting)
         }
         .padding()
     }
 
-    // AIからのアドバイスを取得する関数
     @MainActor
     func fetchAIResponse() async {
-        // リクエスト送信中のUI更新
         isRequesting = true
         buttonText = "リクエスト送信中..."
         buttonColor = .red
@@ -84,10 +82,6 @@ struct SixthView: View {
                 switch firstChoice.message {
                 case .assistant(let assistantMessage):
                     aiResponse = assistantMessage.content ?? "No response"
-                    print("AIレスポンス受信: \(aiResponse)")
-                    
-                    // ローカルに保存
-                    UserDefaults.standard.set(aiResponse, forKey: "aiResponse")
                 default:
                     break
                 }
@@ -97,7 +91,6 @@ struct SixthView: View {
             print("エラー発生: \(error.localizedDescription)")
         }
         
-        // リクエスト終了後のUI更新
         isRequesting = false
         buttonText = "AIに相談"
         buttonColor = .blue
