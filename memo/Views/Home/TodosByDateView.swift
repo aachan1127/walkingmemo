@@ -6,13 +6,16 @@
 //
 
 import SwiftUI
+import Firebase
 
 struct TodosByDateView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     var selectedDate: Date
     @State var todos: [Todo] = []
     @State private var isEditing = false
-    @State private var selectedTodos = Set<UUID>() // 編集モードで選択されたTodoのIDを保持
+    @State private var selectedTodos = Set<UUID>()
+    @State private var showAilogView = false
+    @State private var aiFeedback: String = "フィードバックを取得中..."
 
     var body: some View {
         NavigationStack {
@@ -20,7 +23,7 @@ struct TodosByDateView: View {
                 ForEach(todos, id: \.id) { todo in
                     Text(todo.value)
                 }
-                .onDelete(perform: deleteTodo) // スワイプ削除
+                .onDelete(perform: deleteTodo)
             }
             .environment(\.editMode, isEditing ? .constant(.active) : .constant(.inactive))
             .navigationTitle("\(formattedDate(selectedDate))のメモ")
@@ -30,7 +33,6 @@ struct TodosByDateView: View {
                     Button(action: {
                         isEditing.toggle()
                         if !isEditing {
-                            // 編集モードが終了したら、選択をクリア
                             selectedTodos.removeAll()
                         }
                     }) {
@@ -45,6 +47,20 @@ struct TodosByDateView: View {
                         }
                     }
                 }
+            }
+            
+            Button("AIによるフィードバックを確認") {
+                fetchAIResponseFromFirebase()
+                showAilogView = true
+            }
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .sheet(isPresented: $showAilogView) {
+                AilogView(aiFeedback: aiFeedback)
+                    .presentationDetents([.medium, .large]) // ハーフモーダル
+                    .presentationDragIndicator(.visible)
             }
         }
         .onAppear {
@@ -61,51 +77,34 @@ struct TodosByDateView: View {
     }
 
     func getTodos(for date: Date) throws -> [Todo] {
-        if let userID = authViewModel.currentUser?.id {
-            let key = "todos_\(userID)"
-            if let data = UserDefaults.standard.data(forKey: key) {
-                var allTodos = try JSONDecoder().decode([Todo].self, from: data)
-                let calendar = Calendar.current
+        guard let userID = authViewModel.currentUser?.id else {
+            print("ユーザーがログインしていません")
+            return []
+        }
 
-                // 削除されていないTodoのみをフィルタリング
-                allTodos = allTodos.filter { !$0.isDeleted }
+        let key = "todos_\(userID)"
+        if let data = UserDefaults.standard.data(forKey: key) {
+            var allTodos = try JSONDecoder().decode([Todo].self, from: data)
+            allTodos = allTodos.filter { !$0.isDeleted }
 
-                return allTodos.filter { todo in
-                    if let todoDate = todo.date {
-                        return calendar.isDate(todoDate, inSameDayAs: date)
-                    } else {
-                        // dateがnilの場合は除外
-                        return false
-                    }
+            let calendar = Calendar.current
+            return allTodos.filter { todo in
+                if let todoDate = todo.date {
+                    return calendar.isDate(todoDate, inSameDayAs: date)
+                } else {
+                    return false
                 }
-            } else {
-                return []
             }
         } else {
-            print("ユーザーがログインしていません")
             return []
         }
     }
 
-    func saveAllTodos(_ todosToSave: [Todo]) {
-        if let userID = authViewModel.currentUser?.id {
-            let key = "todos_\(userID)"
-            do {
-                let encodedTodos = try JSONEncoder().encode(todosToSave)
-                UserDefaults.standard.set(encodedTodos, forKey: key)
-            } catch {
-                print("データのエンコードに失敗しました: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    // スワイプ削除
     func deleteTodo(at offsets: IndexSet) {
         for index in offsets {
             var todo = todos[index]
             todo.isDeleted = true
             if let allTodos = try? getAllTodos() {
-                // 該当のTodoを更新
                 if let idx = allTodos.firstIndex(where: { $0.id == todo.id }) {
                     var updatedTodos = allTodos
                     updatedTodos[idx] = todo
@@ -116,7 +115,6 @@ struct TodosByDateView: View {
         loadTodos()
     }
 
-    // 複数選択削除
     func deleteSelectedTodos() {
         if var allTodos = try? getAllTodos() {
             for id in selectedTodos {
@@ -140,8 +138,19 @@ struct TodosByDateView: View {
                 return []
             }
         } else {
-            print("ユーザーがログインしていません")
             throw NSError(domain: "UserNotLoggedIn", code: 1, userInfo: nil)
+        }
+    }
+
+    func saveAllTodos(_ todosToSave: [Todo]) {
+        if let userID = authViewModel.currentUser?.id {
+            let key = "todos_\(userID)"
+            do {
+                let encodedTodos = try JSONEncoder().encode(todosToSave)
+                UserDefaults.standard.set(encodedTodos, forKey: key)
+            } catch {
+                print("データのエンコードに失敗しました: \(error.localizedDescription)")
+            }
         }
     }
 
@@ -149,6 +158,38 @@ struct TodosByDateView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy年MM月dd日"
         return formatter.string(from: date)
+    }
+
+    func fetchAIResponseFromFirebase() {
+        guard let userID = authViewModel.currentUser?.id else {
+            print("ユーザーがログインしていません")
+            self.aiFeedback = "ユーザーがログインしていません。"
+            return
+        }
+
+        let db = Firestore.firestore()
+        let startOfDay = Calendar.current.startOfDay(for: selectedDate)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+
+        let startTimestamp = Timestamp(date: startOfDay)
+        let endTimestamp = Timestamp(date: endOfDay)
+
+        db.collection("feedbacks")
+            .whereField("userID", isEqualTo: userID)
+            .whereField("timestamp", isGreaterThanOrEqualTo: startTimestamp)
+            .whereField("timestamp", isLessThan: endTimestamp)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("フィードバック取得エラー: \(error.localizedDescription)")
+                    self.aiFeedback = "フィードバックの取得に失敗しました。"
+                    return
+                }
+                if let document = snapshot?.documents.first {
+                    self.aiFeedback = document.data()["aiResponse"] as? String ?? "フィードバックが見つかりませんでした。"
+                } else {
+                    self.aiFeedback = "フィードバックが見つかりませんでした。"
+                }
+            }
     }
 }
 

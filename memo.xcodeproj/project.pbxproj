@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		C7252DA22C9C29E000D18951 /* FifthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7252DA12C9C29E000D18951 /* FifthView.swift */; };
 		C7252DA42C9D4B7100D18951 /* SixthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7252DA32C9D4B7100D18951 /* SixthView.swift */; };
+		C777A6652CAFDD9E00C46214 /* AilogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C777A6642CAFDD9E00C46214 /* AilogView.swift */; };
 		C793A3602CA2A0F300E4ACC5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C793A35F2CA2A0F300E4ACC5 /* GoogleService-Info.plist */; };
 		C793A3922CA2A40B00E4ACC5 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C793A3912CA2A40B00E4ACC5 /* FirebaseAuth */; };
 		C793A3942CA2A44000E4ACC5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = C793A3932CA2A44000E4ACC5 /* FirebaseFirestore */; };
@@ -63,6 +64,7 @@
 /* Begin PBXFileReference section */
 		C7252DA12C9C29E000D18951 /* FifthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FifthView.swift; sourceTree = "<group>"; };
 		C7252DA32C9D4B7100D18951 /* SixthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SixthView.swift; sourceTree = "<group>"; };
+		C777A6642CAFDD9E00C46214 /* AilogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AilogView.swift; sourceTree = "<group>"; };
 		C793A35F2CA2A0F300E4ACC5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C7E014852CA67C8A000D2975 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		C7E014872CA6851F000D2975 /* WalkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkView.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				C7E014BC2CAEBF63000D2975 /* CustomCalendarView.swift */,
 				C7E014B82CAE5C5B000D2975 /* TodosByDateView.swift */,
 				C7E014BA2CAE9924000D2975 /* DeletView.swift */,
+				C777A6642CAFDD9E00C46214 /* AilogView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -424,6 +427,7 @@
 				C7E014BD2CAEBF63000D2975 /* CustomCalendarView.swift in Sources */,
 				C7E0148D2CA692B8000D2975 /* BrandImage.swift in Sources */,
 				C7ED00AD2C860108007AA630 /* ContentView.swift in Sources */,
+				C777A6652CAFDD9E00C46214 /* AilogView.swift in Sources */,
 				C7E014A02CA70071000D2975 /* MyPageRow.swift in Sources */,
 				C7E014B92CAE5C5B000D2975 /* TodosByDateView.swift in Sources */,
 				C7F28AEC2C9BF92400F70CA6 /* ThirdView.swift in Sources */,
