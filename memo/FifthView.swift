@@ -51,17 +51,15 @@ struct FifthView: View {
                 .cornerRadius(8)
                 .disabled(isRequesting)
                 
-                
-                    // Home画面に戻るボタン
-                    Button("Home画面に戻る") {
-                        saveFeedbackToFirebase() // Firebaseにフィードバックを保存
-                        // 他の処理（必要に応じて）
-                        navigateToHome = true  // HomeViewへ遷移するトリガー
-                    }
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                // Home画面に戻るボタン
+                Button("Home画面に戻る") {
+                    saveFeedbackToFirebase() // Firebaseにフィードバックを保存
+                    navigateToHome = true  // HomeViewへ遷移するトリガー
+                }
+                .padding()
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(8)
                 
             }
             .navigationTitle("フィードバック画面")
@@ -113,6 +111,15 @@ struct FifthView: View {
     private func saveFeedbackToFirebase() {
         guard let userID = Auth.auth().currentUser?.uid else {
             print("ユーザーがログインしていません")
+            return
+        }
+        
+        // 必要な値がnilまたは空でないかを確認
+        guard !inputDetail.isEmpty,
+              !inputPositiveThought.isEmpty,
+              !aiResponse.isEmpty,
+              aiResponse != "No response" else {
+            print("必要なフィードバックデータが不足しています")
             return
         }
         

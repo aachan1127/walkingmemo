@@ -23,7 +23,7 @@ struct BrandImage: View {
             endPoint: .bottomLeading
         )
         .mask(
-            Image(systemName: "flame.fill")
+            Image(systemName: "heart.fill")
                 .resizable()
                 .scaledToFit()
         )
